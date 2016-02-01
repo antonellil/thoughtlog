@@ -1,0 +1,20 @@
+-- Thoughts table
+postId
+content
+dateCreated
+dateDeleted
+
+-- Tags 
+tagId
+content
+dateCreated
+
+-- Post Tags
+tagId
+postId
+
+-- Users table 
+userId
+name
+nickname
+

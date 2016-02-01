@@ -1,0 +1,23 @@
+{
+  "name": "thoughtLog",
+  "version": "0.0.1",
+  "description": "Log for ones thoughts to find later and make connections",
+  "keywords": [
+    "thoughts",
+    "log"
+  ],
+  "homepage": "http://github.com/antonellil/thoughtlog",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/antonellil/thoughtlog.git"
+  },
+  "author": "Louis Antonelli <lpa22@cornell.edu>",
+  "main": "./main",
+  "dependencies": {
+    "pg": "*",
+    "lodash": "*"
+  },
+  "engines": {
+    "node": ">= 0.12.0"
+  }
+}

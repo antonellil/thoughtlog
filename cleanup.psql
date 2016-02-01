@@ -1,0 +1,4 @@
+DROP TABLE thoughtThemes;
+DROP TABLE themes;
+DROP TABLE thoughts;
+DROP TABLE brains;
