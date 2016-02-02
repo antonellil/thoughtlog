@@ -12,10 +12,12 @@
     "url": "git://github.com/antonellil/thoughtlog.git"
   },
   "author": "Louis Antonelli <lpa22@cornell.edu>",
-  "main": "./main",
+  "main": ".",
   "dependencies": {
-    "pg": "*",
-    "lodash": "*"
+    "ejs": "^2.4.1",
+    "express": "*",
+    "lodash": "*",
+    "pg": "*"
   },
   "engines": {
     "node": ">= 0.12.0"

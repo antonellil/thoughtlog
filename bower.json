@@ -1,0 +1,28 @@
+{
+  "name": "thoughtLog",
+  "description": "Log for ones thoughts to find later and make connections",
+  "main": "./main",
+  "authors": [
+    "Louis Antonelli <lpa22@cornell.edu>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "thoughts",
+    "log"
+  ],
+  "homepage": "https://github.com/antonellil/thoughtlog",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "^0.14.7",
+    "babel": "*",
+    "jquery": "^2.2.0",
+    "moment": "^2.11.1"
+  }
+}
