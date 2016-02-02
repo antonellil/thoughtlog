@@ -8,3 +8,6 @@ Keyup ajax serach requests for tags that cancel/resend on next key press
 
 Read this for UI
 https://facebook.github.io/react/docs/interactivity-and-dynamic-uis.html
+
+Stateless functions
+https://facebook.github.io/react/docs/reusable-components.html#stateless-functions
