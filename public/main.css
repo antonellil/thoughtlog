@@ -1,16 +1,66 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    color: #292f33;
+}
+
+h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.thought-log {
+    display: flex;
+    flex-direction: column;
+}
+
+.thought-box-wrapper, .recent-thoughts-wrapper {
+    margin: 20px 20px 0 20px;
+}
+
+.thought-textarea {
+    height: 50px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 2px;
+    padding: 5px;
+    margin-bottom: 3px;
+    line-height: 16px;
+}
+
 .thought {
-    margin-bottom: 10px;
-    clear: both;    
+    margin-bottom: 9px;
+    clear: both;
+    
 }
 
 .thought-content {
-    clear: both;
+    margin-bottom: 2px;
+    word-wrap: break-word;
+    font-size: 12px;
+    line-height: 15.4px;
 }
 
 .thought-datetime {
     clear: both;
     display: block;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #8899a6;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+}
+
+.button {
+    display: block;
+    float: left;
+    clear: both;
+    padding: 5px;
+    border-radius: 2px;
+    background: #00275E;
+    color: #ffffff;
+    cursor: pointer;
     font-size: 11px;
+    text-transform: lowercase;
 }

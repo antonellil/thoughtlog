@@ -14,6 +14,7 @@
   "author": "Louis Antonelli <lpa22@cornell.edu>",
   "main": ".",
   "dependencies": {
+    "body-parser": "^1.14.2",
     "ejs": "^2.4.1",
     "express": "*",
     "livereload": "^0.4.1",

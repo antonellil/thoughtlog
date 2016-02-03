@@ -23,6 +23,8 @@
     "react": "^0.14.7",
     "babel": "*",
     "jquery": "^2.2.0",
-    "moment": "^2.11.1"
+    "moment": "^2.11.1",
+    "flexbox": "*",
+    "pubsubjs": "^0.4.0"
   }
 }

@@ -18,7 +18,7 @@ https://facebook.github.io/react/docs/reusable-components.html#stateless-functio
 #Feature ideas:
 
 Daily aggregation by tags used
-* Example - #workout 4.5 miles bike, 1.5 mile run, 12 rep 135, 
+* Example - good #workout 4.5 miles bike, 1.5 mile run, 12 rep 135, 
 8 rep 185, 8 rep 205, 7 rep 225 bench, 3x8 lat pull downs 100 pulldown, 
 3x8 bicep pulldowns, etc. then can do a day aggregation search for #workout 
 or #lifting in a time period and quickly see all the days and workouts that 
