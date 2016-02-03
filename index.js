@@ -9,7 +9,7 @@ app.set('view engine', 'ejs');
 // Bower components
 app.use('/bower_components',  express.static(__dirname + '/bower_components'));
 app.use('/scripts',  express.static(__dirname + '/scripts'));
-
+app.use('/public',  express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
     res.render('pages/index');
@@ -46,3 +46,7 @@ app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
 });
 
+// Dev
+var livereload = require('livereload');
+var server = livereload.createServer();
+server.watch([__dirname + "/public", __dirname + "/scripts"]);

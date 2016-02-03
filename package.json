@@ -16,6 +16,7 @@
   "dependencies": {
     "ejs": "^2.4.1",
     "express": "*",
+    "livereload": "^0.4.1",
     "lodash": "*",
     "pg": "*"
   },

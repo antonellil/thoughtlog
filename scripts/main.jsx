@@ -2,15 +2,13 @@ var Thought = React.createClass({
   render: function() {
     return (
       <div className="thought">
-        <h3 className="thought-id">
-          {this.props.id}
-        </h3>
+        <div className="thought-content">
+            {this.props.children}
+        </div>
         
-        <h3 className="thought-datetime">
-          {this.props.datetime}
-        </h3>
-        
-        {this.props.children}
+        <span className="thought-datetime">
+            {this.props.datetime}
+        </span>
       </div>
     );
   }
@@ -38,7 +36,7 @@ var RecentThoughts = React.createClass({
     },
     render: function() {
         var thoughtNodes = this.state.data.map(function(thought, i) {
-            var thoughtDateCreated = moment(thought.datecreated).format("M/D/YY h:ma");
+            var thoughtDateCreated = moment(thought.datecreated).format("h:mA - M/D/YY");
             return (
                 <Thought id={thought.thoughtid} key={thought.thoughtid} datetime={thoughtDateCreated} >
                     {thought.content}
@@ -47,7 +45,7 @@ var RecentThoughts = React.createClass({
         });
         return (
             <div className="thought-wrapper">
-                <h1>Recent Thoughts</h1>
+                <h1>Recent Thoughts THO</h1>
                 <div className="thought-list">
                     {thoughtNodes}
                 </div>
