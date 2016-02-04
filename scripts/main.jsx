@@ -8,26 +8,13 @@ var Thought = (props) =>
         </span>
     </div>;
 
-var RecentThoughts = React.createClass({
-    render: function() {
-        var thoughtNodes = this.props.thoughts.map(function(thought, i) {
-            var thoughtDateCreated = moment(thought.datecreated).format('h:mA - M/D/YY');
-            return (
-                <Thought id={thought.thoughtid} key={thought.thoughtid} datetime={thoughtDateCreated} >
-                    {thought.content}
-                </Thought>
-            );
-        });
-        return (
-            <div className="recent-thoughts-wrapper">
-                <h3>Recent thoughts</h3>
-                <div className="thought-list">
-                    {thoughtNodes}
-                </div>
-            </div>
-        );
-    }
-});
+var RecentThoughts = (props) =>
+    <div className="recent-thoughts-wrapper">
+        <h3>Recent thoughts</h3>
+        <div className="thought-list">
+            {props.thoughts}
+        </div>
+    </div>;
 
 var ThoughtBox = React.createClass({
     loadTagsFromServer: function() {
@@ -47,7 +34,7 @@ var ThoughtBox = React.createClass({
             contentType: 'application/json', 
             data: JSON.stringify({ content: encodeURI(this.state.content.trim()) }),
             success: function(data) {
-                this.setState({ content: "" });
+                this.setState({ content: "", hashMode: false });
                 this.props.onThoughtSubmitted();
             }.bind(this),
         });
@@ -60,13 +47,35 @@ var ThoughtBox = React.createClass({
             this.submitThought();
         }
     },
+    handleHashMode: function(e) {
+        var coords = getCaretCoordinates($(e.target)[0], e.target.selectionEnd),
+            leftModifier = e.keyCode === 8 ? -8 : 0,
+            lastResult = /\S+$/.exec(e.target.value.slice(0, e.target.selectionEnd)),
+            lastWord = lastResult ? lastResult[0] : null;
+            
+        this.setState({ 
+            caretTop: coords.top, 
+            caretLeft: coords.left + leftModifier,
+            hashMode: lastWord ? lastWord.indexOf('#') > -1 : false
+        });
+    },
     getInitialState: function() {
-        return { content: "", tags: [] };
+        return { 
+            content: "", 
+            tags: [],
+            hashMode: false
+        };
     },
     componentDidMount: function() {
         this.loadTagsFromServer();
     },
     render: function() {
+        var tagBoxStyle = { 
+            left: this.state.caretLeft,
+            top: this.state.caretTop,
+            display: this.state.hashMode ? 'block' : 'none'
+        };
+                
         return (
             <div className="thought-box-wrapper">
                 <textarea 
@@ -74,7 +83,12 @@ var ThoughtBox = React.createClass({
                     placeholder="Solid #workout, 8 rep 185 bench, 8 rep 205 bench, 7 rep 225 bench"
                     value={this.state.content}
                     onChange={this.handleChange}
-                    onKeyDown={this.handleEnter}></textarea>
+                    onKeyDown={this.handleOnKeyDown}
+                    onKeyUp={this.handleHashMode}></textarea>
+                
+                <div 
+                    className="tag-box" 
+                    style={tagBoxStyle}></div>
             </div>
         );
     }
@@ -101,10 +115,19 @@ var ThoughtLog = React.createClass({
         });
     },
     render: function() {
+        var thoughtNodes = this.state.thoughts.map(function(thought, i) {
+            var thoughtDateCreated = moment(thought.datecreated).format('h:mA - M/D/YY');
+            return (
+                <Thought id={thought.thoughtid} key={thought.thoughtid} datetime={thoughtDateCreated} >
+                    {thought.content}
+                </Thought>
+            );
+        });
+        
         return (
             <div className="thought-log">
                 <ThoughtBox onThoughtSubmitted={this.loadRecentThoughtsFromServer}></ThoughtBox>
-                <RecentThoughts thoughts={this.state.thoughts}></RecentThoughts>
+                <RecentThoughts thoughts={thoughtNodes}></RecentThoughts>
             </div>
         );
     }
