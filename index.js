@@ -36,25 +36,29 @@ app.get('/api/thoughts/recent', function (req, res) {
 
 app.post('/api/thoughts/submit', function (req, res) {
     var client = new pg.Client(connectionString),
-        queryString = 'INSERT INTO thoughts(content, brainid, datecreated) VALUES($1, 1, $2) RETURNING thoughtid';
+        insertQueryString = 'INSERT INTO thoughts(content, brainid, datecreated) VALUES($1, 1, $2)',
+        recentQueryString = 'SELECT * FROM thoughts ORDER BY datecreated DESC LIMIT 10';
         
     client.connect();
-    client.query(queryString, [req.body.content, new Date()],
+    client.query(insertQueryString, [req.body.content, new Date()]);
+    client.query(recentQueryString,
         function (err, result) {
             client.end();
             if (err) {
                 res.json({ error: err });
             } else {
-                console.log("Thought created with id " + result.rows[0].thoughtid);
-                res.json({ thoughtid: result.rows[0].id });
+                res.json(result.rows.map(function(row){
+                    row.content = decodeURI(row.content);
+                    return row;
+                }));
             }
         });
 });
 
-app.get('/api/tags/getAll', function (req, res) {
+app.get('/api/themes/getAll', function (req, res) {
     var client = new pg.Client(connectionString);
     client.connect();
-    client.query('SELECT * FROM tags',
+    client.query('SELECT * FROM themes',
         function (err, result) {
             client.end();
             if (err) {
