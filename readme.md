@@ -18,6 +18,9 @@ https://facebook.github.io/react/docs/reusable-components.html#stateless-functio
 Consolas on OSX
 https://gist.github.com/avalonalex/8125197
 
+Git guide *read*
+http://www.learnenough.com/git-tutorial#sec-our_first_commit
+
 #Feature ideas:
 
 Daily aggregation by tags used
