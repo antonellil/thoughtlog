@@ -15,6 +15,9 @@ https://facebook.github.io/react/docs/interactivity-and-dynamic-uis.html
 Stateless functions
 https://facebook.github.io/react/docs/reusable-components.html#stateless-functions
 
+Consolas on OSX
+https://gist.github.com/avalonalex/8125197
+
 #Feature ideas:
 
 Daily aggregation by tags used
