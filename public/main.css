@@ -11,17 +11,38 @@ h3 {
     margin-bottom: 5px;
 }
 
-.thought-log {
-    display: flex;
-    flex-direction: column;
+#thought-log-wrapper {
+    min-width: 600px;
+    padding: 20px;
+    overflow: hidden;
 }
 
-.thought-box-wrapper, .recent-thoughts-wrapper {
-    margin: 20px 20px 0 20px;
+.thought-box-wrapper {
+    margin-bottom: 20px;
+}
+
+.consuming-section {
+    clear: both;
+    display: flex;
+    justify-content: space-around3;
+}
+
+.recent-thoughts-wrapper {
+   width: 35%;
+   margin-right: 20px;
+}
+
+.explore-wrapper {
+    width: 65%;
+}
+
+.thought-list, .explore-results  {
+    border: 1px solid #eeeeee;
+    border-radius: 2px;
 }
 
 .thought-textarea {
-    height: 50px;
+    min-height: 60px;
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -29,11 +50,14 @@ h3 {
     padding: 5px;
     margin-bottom: 3px;
     line-height: 16px;
-    border: 1px solid #cccccc;
+    border: 1px solid #dedede;
+    overflow: hidden;
+    resize: none;
+    outline: none;
 }
 
-.thought-textarea:focus {
-    outline:0;
+.help-text {
+    color: #999999;
 }
 
 .theme-box {
@@ -58,9 +82,10 @@ h3 {
 }
 
 .thought {
-    margin-bottom: 9px;
     clear: both;
-    
+    padding: 9px;
+    border-bottom: 1px solid #efefef;
+    border-radius: 2px;
 }
 
 .thought-content {
@@ -68,6 +93,7 @@ h3 {
     word-wrap: break-word;
     font-size: 12px;
     line-height: 15.4px;
+    white-space: pre-wrap;
 }
 
 .thought-datetime {

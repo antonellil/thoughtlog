@@ -17,9 +17,15 @@
     "body-parser": "^1.14.2",
     "ejs": "^2.4.1",
     "express": "*",
+    "express-session": "^1.13.0",
+    "knex": "^0.9.0",
     "livereload": "^0.4.1",
     "lodash": "*",
-    "pg": "*"
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.0",
+    "pg": "*",
+    "sha1": "^1.1.1",
+    "uuid": "^2.0.1"
   },
   "engines": {
     "node": ">= 0.12.0"

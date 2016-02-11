@@ -14,11 +14,28 @@ var Thought = (props) =>
 
 var RecentThoughts = (props) =>
     <div className="recent-thoughts-wrapper">
-        <h3>Recent thoughts</h3>
+        <h3>Recent</h3>
         <div className="thought-list">
             {props.thoughts}
         </div>
     </div>;
+
+var Explore = React.createClass({
+    getInitialState: function() {
+        return { };
+    },
+    componentDidMount: function() {
+        return;
+    },
+    render: function() {
+        return (
+            <div className="explore-wrapper">
+                <h3>Explore</h3>
+                <div className="explore-results"></div>
+            </div>
+        );
+    }
+});
 
 var ThoughtBox = React.createClass({
     loadTagsFromServer: function() {
@@ -26,8 +43,8 @@ var ThoughtBox = React.createClass({
             this.setState({ allThemes: data });
         }.bind(this));
     },
-    submitThought: function() {
-        if(this.state.content === '') {
+    submitThought: function(e) {
+        if(this.state.content.trim() == '') {
             this.setState({ error: true });
             return;
         }
@@ -41,18 +58,20 @@ var ThoughtBox = React.createClass({
                 this.setState({ content: "", hashMode: false });
                 this.props.onThoughtSubmitted(data);
             }.bind(this),
+            error: function(err) {
+                console.log(err);
+            }
         });
     },
     handleChange: function(e){
+        // Auto grow textarea with the content
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight+'px';
+        
+        // Update state
         this.setState({ content: e.target.value });
     },
     handleHashMode: function(e, themeOptions, selectedTheme) {
-        // Enter key to selected theme
-        if(e.keyCode === 13) {
-            // select theme and exit hash mode
-            console.log("select", selectedTheme);
-        }
-        
         // Down or up arrow
         if(e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 9) {
             selectedTheme += e.keyCode === 40 || e.keyCode === 9 ? 1 : -1;
@@ -62,7 +81,7 @@ var ThoughtBox = React.createClass({
         return mod(selectedTheme, themeOptions.length);
     },
     handleKeyDown: function(e) {
-        // Prevent default in hash mode for enter, down, up
+        // Prevent default in hash mode for enter, down, up, tab
         if(this.state.hashMode) {
             if(e.keyCode === 13 || e.keyCode === 9 || e.keyCode === 40 || e.keyCode === 38) {
                 e.preventDefault();
@@ -71,27 +90,40 @@ var ThoughtBox = React.createClass({
     },
     handleKeyUp: function(e) {
         var coords = getCaretCoordinates($(e.target)[0], e.target.selectionEnd),
-            leftModifier = e.keyCode === 8 ? -8 : 0,
+            leftModifier = e.keyCode === 8 ? -8 : 0, // Backspace
             lastResult = /\S+$/.exec(e.target.value.slice(0, e.target.selectionEnd)),
-            lastWord = lastResult ? lastResult[0] : null,
+            lastTheme = lastResult ? lastResult[0] : null,
+            lastWord = lastTheme ? lastTheme.slice(1).toLowerCase() : null,
             themeOptions = _.filter(this.state.allThemes, function(theme) {
-                    return lastWord 
-                        ? theme.content.indexOf(lastWord.slice(1).toLowerCase()) === 0 
+                    return lastTheme 
+                        ? theme.content.indexOf(lastWord) === 0 // Starts with the typed word
+                            && theme.content.length !== lastWord.length // If user typed full word, remove
                         : false;
                 }),
-            hashMode = lastWord && themeOptions.length > 0
-                ? lastWord.indexOf('#') > -1 
+            hashMode = lastTheme && themeOptions.length > 0
+                ? lastTheme.indexOf('#') > -1 && e.keyCode !== 27 // Escape
                 : false,
+            content = e.target.value,
             selectedTheme = hashMode ? this.state.selectedTheme : 0;
         
         // Enter to submit thought when not in hash mode
-        if(e.keyCode === 13 && !hashMode) {
+        if(e.keyCode === 13 && e.shiftKey && !hashMode) {
             this.submitThought();
+            e.target.style.height = 60+'px'; // Reset height after submission
         }
         
         // Handle hash mode
         if(hashMode) {
-            selectedTheme = this.handleHashMode(e, themeOptions, selectedTheme);
+            // Enter key to selected theme
+            if(e.keyCode === 13) {
+                content = e.target.value.slice(0, lastResult.index + 1)
+                    + themeOptions[selectedTheme].content 
+                    + " " // Space after theme entered
+                    + e.target.value.slice(lastResult.index + 1 + lastWord.length);
+                hashMode = false;
+            } else {
+                selectedTheme = this.handleHashMode(e, themeOptions, selectedTheme);
+            }
         }
         
         this.setState({ 
@@ -99,7 +131,8 @@ var ThoughtBox = React.createClass({
             caretLeft: coords.left + leftModifier,
             hashMode: hashMode,
             themeOptions: themeOptions,
-            selectedTheme: selectedTheme
+            selectedTheme: selectedTheme,
+            content: content
         });
     },
     getInitialState: function() {
@@ -108,7 +141,9 @@ var ThoughtBox = React.createClass({
             allThemes: [],
             themeOptions: [],
             hashMode: false,
-            selectedTheme: 0
+            selectedTheme: 0,
+            textareaStyle: {},
+            selectionEnd: 0
         };
     },
     componentDidMount: function() {
@@ -133,11 +168,15 @@ var ThoughtBox = React.createClass({
             <div className="thought-box-wrapper">
                 <textarea 
                     className="thought-textarea" 
+                    style={this.state.textareaStyle}
                     placeholder="Solid #workout, 8 rep 185 bench, 8 rep 205 bench, 7 rep 225 bench"
                     value={this.state.content}
+                    selectionEnd={this.state.selectionEnd}
                     onChange={this.handleChange}
                     onKeyUp={this.handleKeyUp}
                     onKeyDown={this.handleKeyDown}></textarea>
+                    
+                <div className="help-text">Shift + Enter to submit</div>
                 
                 <div className="theme-box" style={tagBoxStyle}>
                     {themes}
@@ -172,10 +211,11 @@ var ThoughtLog = React.createClass({
     },
     render: function() {
         var thoughtNodes = this.state.thoughts.map(function(thought, i) {
-            var thoughtDateCreated = moment(thought.datecreated).format('h:mA - M/D/YY');
+            var thoughtDateCreated = moment(thought.datecreated).format('h:mmA - M/D/YY'),
+                content = decodeURI(thought.content);
             return (
                 <Thought id={thought.thoughtid} key={thought.thoughtid} datetime={thoughtDateCreated} >
-                    {thought.content}
+                    {content}
                 </Thought>
             );
         });
@@ -183,7 +223,11 @@ var ThoughtLog = React.createClass({
         return (
             <div className="thought-log">
                 <ThoughtBox onThoughtSubmitted={this.setRecentThoughts}></ThoughtBox>
-                <RecentThoughts thoughts={thoughtNodes}></RecentThoughts>
+                
+                <div className="consuming-section">
+                    <RecentThoughts thoughts={thoughtNodes}></RecentThoughts>
+                    <Explore></Explore>
+                </div>
             </div>
         );
     }

@@ -1,13 +1,15 @@
 CREATE TABLE brains (
-    brainId         serial CONSTRAINT brainKey PRIMARY KEY,
-    name            text NOT NULL,
-    nickname        text NULL
+    brainId         varchar(256) CONSTRAINT brainKey PRIMARY KEY,
+    name            varchar(512) NOT NULL,
+    nickname        varchar(256) NULL,
+    auth            text NULL,
+    fbauth          text NULL
 );
 
 CREATE TABLE thoughts (
     thoughtId       serial CONSTRAINT thoughtKey PRIMARY KEY,
     content         text NOT NULL,
-    brainId         integer NOT NULL REFERENCES brains (brainId),
+    brainId         varchar(256) NOT NULL REFERENCES brains (brainId),
     dateCreated     timestamp NOT NULL,
     dateDeleted     timestamp NULL
 );
