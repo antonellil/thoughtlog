@@ -1,24 +1,45 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <title>ThoughtLog</title>
-    <script src="/bower_components/react/react.js"></script>
-    <script src="/bower_components/react/react-dom.js"></script>
-    <script src="/bower_components/babel/browser.min.js"></script>
-    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/bower_components/moment/min/moment.min.js"></script>
-    <script src="/bower_components/textarea-caret-position/index.js"></script>
-    <script src="/bower_components/lodash/dist/lodash.min.js"></script>
+    
+    <%if (locals.authToken && locals.brainid) { %>
+        <script src="/bower_components/react/react.js"></script>
+        <script src="/bower_components/react/react-dom.js"></script>
+        <script src="/bower_components/babel/browser.min.js"></script>
+        <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="/bower_components/moment/min/moment.min.js"></script>
+        <script src="/bower_components/textarea-caret-position/index.js"></script>
+        <script src="/bower_components/lodash/dist/lodash.min.js"></script>
   
-    <link rel="stylesheet" href="/bower_components/flexbox/css/grid.min.css" />
-    <link rel="stylesheet" href="/public/main.css" />
+        <link rel="stylesheet" href="/bower_components/flexbox/css/grid.min.css" />
+        <link rel="stylesheet" href="/public/main.css" />
+    <% } %>
   </head>
   <body>
   
-    <div id="thought-log-wrapper"></div>
+    <%if (locals.authToken && locals.brainid){ %>
+        <div id="thought-log-wrapper"></div>
     
-    <script type="text/babel" src="/scripts/main.jsx"></script>
+        <script>
+            localStorage.setItem('authToken', '<%= authToken %>');
+            localStorage.setItem('brainid', '<%= brainid %>');
+            window.history.pushState('home', 'ThoughtLog', '/');
+        </script>
+        
+        <script src="/scripts/ca$h.js"></script>
+        <script type="text/babel" src="/scripts/main.jsx"></script>
+    <% } else { %>
+        <script>
+            if(localStorage.getItem('authToken') && localStorage.getItem('brainid')) {
+                var authToken = localStorage.getItem('authToken'),
+                    brainid = localStorage.getItem('brainid');
+                window.location.replace('/home?authToken=' + authToken + '&brainid=' + brainid);
+            } else {
+                window.location.replace('/login');
+            }
+        </script>
+    <% } %>
   </body>
 </html>

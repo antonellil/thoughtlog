@@ -2,7 +2,7 @@ CREATE TABLE brains (
     brainId         varchar(256) CONSTRAINT brainKey PRIMARY KEY,
     name            varchar(512) NOT NULL,
     nickname        varchar(256) NULL,
-    auth            text NULL,
+    authtoken       text NULL,
     fbauth          text NULL
 );
 

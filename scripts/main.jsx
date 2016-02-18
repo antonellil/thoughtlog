@@ -1,7 +1,3 @@
-window.mod = function(n, m) {
-        return ((n % m) + m) % m;
-};
-
 var Thought = (props) => 
     <div className="thought">
         <div className="thought-content">
@@ -37,29 +33,61 @@ var Explore = React.createClass({
     }
 });
 
+var Settings = React.createClass({
+    logout: function() {
+        ca$h.get({
+            url: '/logout', 
+            success: function() {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('brainid');
+                window.location.replace('/login');
+            }, 
+            error: function() {
+                alert("There was an error logging out. Please try again.");
+            }
+        });
+    },
+    render: function() {
+        return (
+            <div className="settings-wrapper">
+                <a className="logout-button" onClick={this.logout}>Logout</a>
+            </div>
+        );
+    }
+});
+
 var ThoughtBox = React.createClass({
     loadTagsFromServer: function() {
-        $.get('/api/themes/getAll', { }, function(data){
-            this.setState({ allThemes: data });
-        }.bind(this));
+        ca$h.get({
+            url: '/api/themes/getAll', 
+            success: function(data){
+                this.setState({ allThemes: data });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(status, err.toString());
+            }
+        });
     },
     submitThought: function(e) {
-        if(this.state.content.trim() == '') {
+        var content = this.state.content;
+        
+        if(content.trim() == '') {
             this.setState({ error: true });
             return;
         }
         
-        $.ajax({
-            url: '/api/thoughts/submit', 
-            type: 'POST', 
-            contentType: 'application/json', 
-            data: JSON.stringify({ content: encodeURI(this.state.content.trim()) }),
+        this.setState({ content: ""}); // Clear content
+        
+        ca$h.post({
+            url: '/api/thoughts/submit',
+            data: { content: encodeURI(content.trim()) },
             success: function(data) {
                 this.setState({ content: "", hashMode: false });
                 this.props.onThoughtSubmitted(data);
             }.bind(this),
             error: function(err) {
-                console.log(err);
+                this.setState({ content: content }); // Reset content with submitted
+                alert("Error submitting post. Please try again.");
             }
         });
     },
@@ -78,7 +106,7 @@ var ThoughtBox = React.createClass({
         }
             
         // Check selected theme bounds
-        return mod(selectedTheme, themeOptions.length);
+        return ca$h.mod(selectedTheme, themeOptions.length);
     },
     handleKeyDown: function(e) {
         // Prevent default in hash mode for enter, down, up, tab
@@ -188,7 +216,7 @@ var ThoughtBox = React.createClass({
 
 var ThoughtLog = React.createClass({
     getInitialState: function() {
-        return { thoughts: [] };
+        return { thoughts: [], style: { display: 'none' } };
     },
     componentDidMount: function() {
         this.loadRecentThoughtsFromServer();
@@ -197,16 +225,14 @@ var ThoughtLog = React.createClass({
         this.setState({ thoughts: recentThoughts });
     },
     loadRecentThoughtsFromServer: function() {
-        $.ajax({
-            url: '/api/thoughts/recent',
-            dataType: 'json',
-            cache: false,
+        ca$h.get({
+            url: '/api/thoughts/recent', 
             success: function(data) {
-                this.setState({ thoughts: data });
+                this.setState({ thoughts: data, style: { display: 'block' } });
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error(this.props.url, status, err.toString());
-            }.bind(this)
+                console.error(status, err.toString());
+            }
         });
     },
     render: function() {
@@ -221,12 +247,14 @@ var ThoughtLog = React.createClass({
         });
         
         return (
-            <div className="thought-log">
-                <ThoughtBox onThoughtSubmitted={this.setRecentThoughts}></ThoughtBox>
+            <div className="thought-log" style={this.state.style}>
+                <Settings />
+            
+                <ThoughtBox onThoughtSubmitted={this.setRecentThoughts} />
                 
                 <div className="consuming-section">
-                    <RecentThoughts thoughts={thoughtNodes}></RecentThoughts>
-                    <Explore></Explore>
+                    <RecentThoughts thoughts={thoughtNodes} />
+                    <Explore />
                 </div>
             </div>
         );

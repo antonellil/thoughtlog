@@ -17,6 +17,18 @@ h3 {
     overflow: hidden;
 }
 
+.settings-wrapper {
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.settings-wrapper .logout-button{
+    float: right;
+    cursor: pointer;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
 .thought-box-wrapper {
     margin-bottom: 20px;
 }
@@ -24,7 +36,7 @@ h3 {
 .consuming-section {
     clear: both;
     display: flex;
-    justify-content: space-around3;
+    justify-content: space-around;
 }
 
 .recent-thoughts-wrapper {
@@ -88,6 +100,10 @@ h3 {
     border-radius: 2px;
 }
 
+.thought:last-child {
+    border-bottom: none;
+}
+
 .thought-content {
     margin-bottom: 2px;
     word-wrap: break-word;
@@ -115,4 +131,32 @@ h3 {
     cursor: pointer;
     font-size: 11px;
     text-transform: lowercase;
+}
+
+.login h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.login-wrapper .login-button {
+    background: #00275E;
+    color: #ffffff;
+    padding: 10px 20px 10px 20px;
+    border-radius: 2px;
+    text-decoration: none;
+    text-transform: uppercase;
+    box-shadow: 1px 1px 2px #ccc;
+    display: block;
+    cursor: pointer;
+}
+
+.login-wrapper .login-button:hover {
+    background: #333333;
 }
