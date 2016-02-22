@@ -82,13 +82,13 @@ var ThoughtBox = React.createClass({
             url: '/api/thoughts/submit',
             data: { content: encodeURI(content.trim()) },
             success: function(data) {
-                this.setState({ content: "", hashMode: false });
-                this.props.onThoughtSubmitted(data);
+                this.setState({ content: "", hashMode: false, allThemes: data.themes });
+                this.props.onThoughtSubmitted(data.recentThoughts);
             }.bind(this),
             error: function(err) {
                 this.setState({ content: content }); // Reset content with submitted
                 alert("Error submitting post. Please try again.");
-            }
+            }.bind(this)
         });
     },
     handleChange: function(e){
@@ -155,7 +155,7 @@ var ThoughtBox = React.createClass({
         }
         
         this.setState({ 
-            caretTop: coords.top, 
+            caretTop: coords.top + 20, 
             caretLeft: coords.left + leftModifier,
             hashMode: hashMode,
             themeOptions: themeOptions,

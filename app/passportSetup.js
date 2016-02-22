@@ -7,12 +7,12 @@ var passport = require('passport'),
                 clientID: 974780915923162,
                 clientSecret: '067675629c9525761c1bb33139856cd9',
                 callbackURL: "http://localhost:3000/auth/facebook/callback",
-                profileFields: ['name', 'email', 'picture']
+                profileFields: ['id', 'emails', 'first_name', 'last_name', 'gender']
             },
             function (accessToken, refreshToken, profile, done) {
                 // Get or create brain, update app auth token and fb auth token 
                 knex('brains')
-                    .where({ brainid: profile.id })
+                    .where({ fbid: profile.id })
                     .first()
                     .then(function(brain) {
                         
@@ -28,9 +28,10 @@ var passport = require('passport'),
                         return knex('brains')
                             .returning('brainid')
                             .insert({ 
-                                brainid: profile.id,
-                                name: profile.displayName,
+                                fbid: profile.id,
+                                name: profile.name.givenName + " " + profile.name.familyName,
                                 fbauth: accessToken,
+                                authtoken: uuid.v4()
                             });
                     })
                     .then(function(rows){

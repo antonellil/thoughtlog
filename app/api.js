@@ -1,11 +1,26 @@
 var express = require('express'),
-    api = express.Router();    
+    _ = require('lodash'),
+    api = express.Router(),
+    hashtagRegex = function(regex, text) {
+        var res = [], match = null;
+
+        while (match = regex.exec(text)) {
+            res.push(match[0].slice(1));
+        }
+
+        return res;
+    };    
     
 module.exports = function(knex) {
     
     // Common queries
     var queries = {
-        recentThoughts: knex('thoughts').select().limit(10).orderBy('datecreated', 'desc')
+        recentThoughts: knex('thoughts').select().limit(10).orderBy('datecreated', 'desc'),
+        themes: knex.max('content as content')
+                    .from('themes')
+                    .leftOuterJoin('thoughtthemes', 'themes.themeid', 'thoughtthemes.themeid')
+                    .groupBy('themes.themeid')
+                    .orderByRaw('COUNT(*) DESC')
     };
     
     api.get('/api/thoughts/recent', function (req, res) {
@@ -22,17 +37,61 @@ module.exports = function(knex) {
     });
 
     api.post('/api/thoughts/submit', function (req, res) {
+        var content = decodeURI(req.body.content),
+            themeContents = hashtagRegex(/\B#\w\w+/g, content),
+            themes = themeContents.map(function(v, i) { 
+                return { 
+                    content: v,
+                    datecreated: new Date()
+                };
+            }),
+            existingThemeIds, themeIds, recentThoughts;
         
-        // Insert new thought and return most recent 10
-        knex('thoughts')
-            .insert({ content: req.body.content, brainid: req.body.brainid, datecreated: new Date() })
+        knex('themes')
+            .select()
+            .whereIn('content', themeContents)
             .then(function (rows) {
-                return queries.recentThoughts;
+                var existingThemes = _.map(rows, 'content'),
+                    newThemes = _.filter(themes, function(theme) { 
+                        return existingThemes.indexOf(theme.content) === -1; 
+                    });
+                
+                existingThemeIds = _.map(rows, 'themeid'); // Store the existing themes
+                
+                return knex('themes').insert(newThemes, 'themeid'); // Insert only new themes, return new themeids
+            })
+            .then(function (returning) {
+                themeIds = returning && returning.length 
+                    ? returning.concat(existingThemeIds) // Store all the theme ids for this thought
+                    : existingThemeIds;
+                
+                return knex('thoughts')
+                    .insert({ 
+                        content: req.body.content, 
+                        brainid: req.body.brainid, 
+                        datecreated: new Date() 
+                    }, 'thoughtid'); // In
             })
             .then(function (rows) {
-                res.json(rows);
+                var thoughtThemes = themeIds.map(function(v, i) {
+                    return { thoughtid: rows[0], themeid: v };
+                });
+                
+                return knex('thoughtthemes').insert(thoughtThemes);
+                
+            })
+            .then(function() {
+                return queries.recentThoughts; // Get recent thoughts
+            })
+            .then(function (rows) {
+                recentThoughts = rows; // Store recent thoughts
+                return queries.themes; // Get all themes
+            })
+            .then(function (rows) {
+                res.json({ recentThoughts: recentThoughts, themes: rows });
             })
             .catch(function (err) {
+                console.log(err);
                 res.json({ error: err });
             })
     });
@@ -40,13 +99,13 @@ module.exports = function(knex) {
     api.get('/api/themes/getAll', function (req, res) {
 
         // Get all themes
-        knex('themes')
-            .select()
+        queries.themes
             .then(function (rows) {
                 res.json(rows);
             })
             .catch(function (err) {
                 res.json({ error: err });
+                console.log(err);
             })
     });
     

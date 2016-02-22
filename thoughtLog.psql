@@ -1,7 +1,11 @@
 CREATE TABLE brains (
-    brainId         varchar(256) CONSTRAINT brainKey PRIMARY KEY,
+    brainid         serial CONSTRAINT brainKey PRIMARY KEY,
+    fbid            varchar(256) NOT NULL,
     name            varchar(512) NOT NULL,
     nickname        varchar(256) NULL,
+    email           varchar(256) NULL,
+    password        varchar(256) NULL,
+    salt            varchar(256) NULL,
     authtoken       text NULL,
     fbauth          text NULL
 );
@@ -25,3 +29,15 @@ CREATE TABLE thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
+
+select max(content) from themes 
+    left outer join thoughtthemes 
+        on themes.themeid = thoughtthemes.themeid 
+    group by themes.themeid
+    order by count(*) desc;
+    
+select * from themes 
+    left outer join thoughtthemes 
+        on themes.themeid = thoughtthemes.themeid 
+    group by themes.themeid;
+

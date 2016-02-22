@@ -3,7 +3,7 @@ var express = require('express'),
     
 module.exports = function(passport, knex) {
     // FB auth
-    auth.get('/auth/facebook', passport.authenticate('facebook'));
+    auth.get('/auth/facebook', passport.authenticate('facebook', { scope: ['public_profile', 'email'] }));
     
     auth.get('/auth/facebook/callback', passport.authenticate('facebook', { session: false }),
         function(req, res) {
