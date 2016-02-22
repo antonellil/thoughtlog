@@ -1,7 +1,7 @@
 var Thought = (props) => 
-    <div className="thought">
+    <div className="thought" onClick={props.clicked}>
         <div className="thought-content">
-            {props.children}
+            {props.content}
         </div>
         <span className="thought-datetime">
             {props.datetime}
@@ -127,7 +127,7 @@ var ThoughtBox = React.createClass({
                         ? theme.content.indexOf(lastWord) === 0 // Starts with the typed word
                             && theme.content.length !== lastWord.length // If user typed full word, remove
                         : false;
-                }),
+                }).slice(0,10),
             hashMode = lastTheme && themeOptions.length > 0
                 ? lastTheme.indexOf('#') > -1 && e.keyCode !== 27 // Escape
                 : false,
@@ -235,16 +235,38 @@ var ThoughtLog = React.createClass({
             }
         });
     },
+    thoughtClicked: function(thoughtid) {
+        console.log(thoughtid); 
+    },
     render: function() {
         var thoughtNodes = this.state.thoughts.map(function(thought, i) {
             var thoughtDateCreated = moment(thought.datecreated).format('h:mmA - M/D/YY'),
-                content = decodeURI(thought.content);
+                decodedContent = decodeURI(thought.content),
+                themes = decodedContent.match(/\B#\w\w+/g),
+                contentPieces = decodedContent.split(/\B#\w\w+/g),
+                i = 0, clickableContent = [contentPieces[i]];
+            
+            // Generate a clickable thought JSX array
+            while(i < themes.length) {
+                clickableContent.push(
+                    <a 
+                    className="theme-tag" 
+                    onClick={function(t){alert(t);}.bind(this, themes[i])} 
+                    key={thought.thoughtid + i}>
+                        {themes[i]}
+                    </a>);
+                clickableContent.push(contentPieces[i + 1]);
+                i++;
+            }
+                
             return (
-                <Thought id={thought.thoughtid} key={thought.thoughtid} datetime={thoughtDateCreated} >
-                    {content}
-                </Thought>
+                <Thought id={thought.thoughtid} 
+                    key={thought.thoughtid} 
+                    datetime={thoughtDateCreated} 
+                    content={clickableContent} 
+                    clicked={this.thoughtClicked.bind(this, thought.thoughtid)} />
             );
-        });
+        }.bind(this));
         
         return (
             <div className="thought-log" style={this.state.style}>

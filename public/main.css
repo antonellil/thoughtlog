@@ -96,8 +96,13 @@ h3 {
 .thought {
     clear: both;
     padding: 9px;
-    border-bottom: 1px solid #efefef;
+    border-bottom: 1px solid #eeeeee;
     border-radius: 2px;
+    cursor: pointer;
+}
+
+.thought:hover {
+    background: #efefef;
 }
 
 .thought:last-child {
@@ -110,6 +115,11 @@ h3 {
     font-size: 12px;
     line-height: 15.4px;
     white-space: pre-wrap;
+}
+
+.thought-content .theme-tag {
+    color: #09ADB7;
+    cursor: pointer;
 }
 
 .thought-datetime {

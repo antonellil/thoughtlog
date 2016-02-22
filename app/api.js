@@ -1,15 +1,6 @@
 var express = require('express'),
     _ = require('lodash'),
-    api = express.Router(),
-    hashtagRegex = function(regex, text) {
-        var res = [], match = null;
-
-        while (match = regex.exec(text)) {
-            res.push(match[0].slice(1));
-        }
-
-        return res;
-    };    
+    api = express.Router();
     
 module.exports = function(knex) {
     
@@ -38,7 +29,7 @@ module.exports = function(knex) {
 
     api.post('/api/thoughts/submit', function (req, res) {
         var content = decodeURI(req.body.content),
-            themeContents = hashtagRegex(/\B#\w\w+/g, content),
+            themeContents = content.match(/\B#\w\w+/g).map(function(theme) { return theme.slice(1); }),
             themes = themeContents.map(function(v, i) { 
                 return { 
                     content: v,
@@ -70,7 +61,7 @@ module.exports = function(knex) {
                         content: req.body.content, 
                         brainid: req.body.brainid, 
                         datecreated: new Date() 
-                    }, 'thoughtid'); // In
+                    }, 'thoughtid');
             })
             .then(function (rows) {
                 var thoughtThemes = themeIds.map(function(v, i) {

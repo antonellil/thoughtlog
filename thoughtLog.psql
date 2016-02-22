@@ -13,7 +13,7 @@ CREATE TABLE brains (
 CREATE TABLE thoughts (
     thoughtId       serial CONSTRAINT thoughtKey PRIMARY KEY,
     content         text NOT NULL,
-    brainId         varchar(256) NOT NULL REFERENCES brains (brainId),
+    brainId         integer NOT NULL REFERENCES brains (brainId),
     dateCreated     timestamp NOT NULL,
     dateDeleted     timestamp NULL
 );
@@ -29,15 +29,4 @@ CREATE TABLE thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
-
-select max(content) from themes 
-    left outer join thoughtthemes 
-        on themes.themeid = thoughtthemes.themeid 
-    group by themes.themeid
-    order by count(*) desc;
-    
-select * from themes 
-    left outer join thoughtthemes 
-        on themes.themeid = thoughtthemes.themeid 
-    group by themes.themeid;
 
