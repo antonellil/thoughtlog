@@ -29,12 +29,6 @@ CREATE TABLE thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
-
-select distinct tts2.thoughtid from thoughtthemes tts1
-    join thoughtthemes tts2
-        on tts1.themeid = tts2.themeid
-    where tts1.thoughtid = 159 
-        and tts2.thoughtid != 159;
         
     
 
