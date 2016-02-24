@@ -1,5 +1,6 @@
 var express = require('express'),
     _ = require('lodash'),
+    words = require('./words.js'),
     api = express.Router();
     
 module.exports = function(knex) {
@@ -29,18 +30,19 @@ module.exports = function(knex) {
 
     api.post('/api/thoughts/submit', function (req, res) {
         var content = decodeURI(req.body.content),
-            themeContents = content.match(/\B#\w\w+/g).map(function(theme) { return theme.slice(1); }),
-            themes = themeContents.map(function(v, i) { 
+            cleanedContentPieces = content.replace(/[^A-Za-z0-9\s]/g,"").trim().toLowerCase().split(/\s+/),
+            themeContents = _.filter(_.uniq(cleanedContentPieces), theme => words.stopWords.indexOf(theme.toLowerCase()) === -1),
+            themes = themeContents ? themeContents.map(function(v, i) {
                 return { 
-                    content: v,
+                    content: v, // Remove all punctuation, space, make lowercase
                     datecreated: new Date()
                 };
-            }),
-            existingThemeIds, themeIds, recentThoughts;
+            }) : null,
+            existingThemeIds = [], themeIds = [], recentThoughts;
         
         knex('themes')
             .select()
-            .whereIn('content', themeContents)
+            .whereIn('content', _.map(themes, 'content'))
             .then(function (rows) {
                 var existingThemes = _.map(rows, 'content'),
                     newThemes = _.filter(themes, function(theme) { 
@@ -69,7 +71,6 @@ module.exports = function(knex) {
                 });
                 
                 return knex('thoughtthemes').insert(thoughtThemes);
-                
             })
             .then(function() {
                 return queries.recentThoughts; // Get recent thoughts
@@ -92,6 +93,48 @@ module.exports = function(knex) {
         // Get all themes
         queries.themes
             .then(function (rows) {
+                res.json(rows);
+            })
+            .catch(function (err) {
+                res.json({ error: err });
+                console.log(err);
+            })
+    });
+    
+    api.post('/api/thought/explore', function (req, res) {
+           
+        // Explore thought
+        knex.raw(`
+                select tts2.thoughtid as thoughtid, max(t.content) as content, max(t.datecreated) as datecreated
+                    from thoughtthemes tts1
+                    join thoughtthemes tts2
+                        on tts1.themeid = tts2.themeid
+                    join thoughts t
+                        on tts2.thoughtid = t.thoughtid
+                    where tts1.thoughtid = :thoughtid
+                        and tts2.thoughtid != :thoughtid
+                    group by tts2.thoughtid
+            `, { thoughtid: req.body.thoughtid })
+            .then(function(result) {
+                res.json(result.rows);
+            })
+            .catch(function(err) {
+                console.log(err);
+            });
+    });
+    
+    api.post('/api/thought/delete', function (req, res) {
+
+        // Delete thought
+        knex('thoughtthemes')
+            .where({ thoughtid: req.body.thoughtid })
+            .del()
+            .then(function(rows) {
+                return knex('thoughts')
+                    .where({ thoughtid: req.body.thoughtid })
+                    .del()
+            })
+            .then(function(rows) {
                 res.json(rows);
             })
             .catch(function (err) {

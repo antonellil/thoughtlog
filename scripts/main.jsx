@@ -1,10 +1,13 @@
 var Thought = (props) => 
-    <div className="thought" onClick={props.clicked}>
+    <div className="thought" onClick={props.exploreThought}>
         <div className="thought-content">
             {props.content}
         </div>
         <span className="thought-datetime">
             {props.datetime}
+        </span>
+        <span className="delete-thought" onClick={props.deleteThought}>
+            delete
         </span>
     </div>;
 
@@ -27,7 +30,11 @@ var Explore = React.createClass({
         return (
             <div className="explore-wrapper">
                 <h3>Explore</h3>
-                <div className="explore-results"></div>
+                <div className="explore-results">
+                    <div className="thought-list">
+                        {this.props.thoughts}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -124,7 +131,7 @@ var ThoughtBox = React.createClass({
             lastWord = lastTheme ? lastTheme.slice(1).toLowerCase() : null,
             themeOptions = _.filter(this.state.allThemes, function(theme) {
                     return lastTheme 
-                        ? theme.content.indexOf(lastWord) === 0 // Starts with the typed word
+                        ? theme.content.toLowerCase().indexOf(lastWord.toLowerCase()) === 0 // Starts with the typed word
                             && theme.content.length !== lastWord.length // If user typed full word, remove
                         : false;
                 }).slice(0,10),
@@ -216,57 +223,87 @@ var ThoughtBox = React.createClass({
 
 var ThoughtLog = React.createClass({
     getInitialState: function() {
-        return { thoughts: [], style: { display: 'none' } };
+        return { recentThoughts: [], exploreThoughts: [], style: { display: 'none' } };
     },
     componentDidMount: function() {
         this.loadRecentThoughtsFromServer();
     },
     setRecentThoughts: function(recentThoughts) {
-        this.setState({ thoughts: recentThoughts });
+        this.setState({ recentThoughts: recentThoughts });
     },
     loadRecentThoughtsFromServer: function() {
         ca$h.get({
             url: '/api/thoughts/recent', 
             success: function(data) {
-                this.setState({ thoughts: data, style: { display: 'block' } });
+                this.setState({ recentThoughts: data, style: { display: 'block' } });
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(status, err.toString());
             }
         });
     },
-    thoughtClicked: function(thoughtid) {
-        console.log(thoughtid); 
+    exploreThought: function(thoughtid) {
+        ca$h.post({
+            url: '/api/thought/explore', 
+            data: { thoughtid: thoughtid },
+            success: function(data) {
+                this.setState({ exploreThoughts: data });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(status, err.toString());
+            }
+        });
+    },
+    deleteThought: function(thoughtid, e) {
+        e.stopPropagation();
+        ca$h.post({
+            url: '/api/thought/delete', 
+            data: { thoughtid: thoughtid },
+            success: function(data) {
+                this.loadRecentThoughtsFromServer();
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(status, err.toString());
+            }
+        });
     },
     render: function() {
-        var thoughtNodes = this.state.thoughts.map(function(thought, i) {
-            var thoughtDateCreated = moment(thought.datecreated).format('h:mmA - M/D/YY'),
-                decodedContent = decodeURI(thought.content),
-                themes = decodedContent.match(/\B#\w\w+/g),
-                contentPieces = decodedContent.split(/\B#\w\w+/g),
-                i = 0, clickableContent = [contentPieces[i]];
-            
-            // Generate a clickable thought JSX array
-            while(i < themes.length) {
-                clickableContent.push(
-                    <a 
-                    className="theme-tag" 
-                    onClick={function(t){alert(t);}.bind(this, themes[i])} 
-                    key={thought.thoughtid + i}>
-                        {themes[i]}
-                    </a>);
-                clickableContent.push(contentPieces[i + 1]);
-                i++;
-            }
+        // Thought node helper function
+        var generateThoughtNodes = function(thoughts) {  
+            return thoughts.map(function(thought, i) {
+                var thoughtDateCreated = moment(thought.datecreated).format('h:mmA - M/D/YY'),
+                    decodedContent = decodeURI(thought.content),
+                    themes = decodedContent.match(/\B#\w\w+/g),
+                    contentPieces = decodedContent.split(/\B#\w\w+/g),
+                    i = 0, clickableContent = contentPieces ? [contentPieces[i]] : [];
                 
-            return (
-                <Thought id={thought.thoughtid} 
-                    key={thought.thoughtid} 
-                    datetime={thoughtDateCreated} 
-                    content={clickableContent} 
-                    clicked={this.thoughtClicked.bind(this, thought.thoughtid)} />
-            );
-        }.bind(this));
+                // Generate a clickable thought JSX array
+                while(themes && i < themes.length) {
+                    clickableContent.push(
+                        <a 
+                        className="theme-tag" 
+                        onClick={function(t){alert(t);}.bind(this, themes[i])} 
+                        key={thought.thoughtid + i}>
+                            {themes[i]}
+                        </a>);
+                    clickableContent.push(contentPieces[i + 1]);
+                    i++;
+                }
+                    
+                return (
+                    <Thought id={thought.thoughtid} 
+                        key={thought.thoughtid} 
+                        datetime={thoughtDateCreated} 
+                        content={clickableContent} 
+                        deleteThought={this.deleteThought.bind(this, thought.thoughtid)}
+                        exploreThought={this.exploreThought.bind(this, thought.thoughtid)} />
+                );
+            }.bind(this));
+        }.bind(this);
+        
+        // Create thought nodes
+        var recentThoughtNodes = generateThoughtNodes(this.state.recentThoughts);
+        var exploreThoughtNodes = generateThoughtNodes(this.state.exploreThoughts);
         
         return (
             <div className="thought-log" style={this.state.style}>
@@ -275,8 +312,8 @@ var ThoughtLog = React.createClass({
                 <ThoughtBox onThoughtSubmitted={this.setRecentThoughts} />
                 
                 <div className="consuming-section">
-                    <RecentThoughts thoughts={thoughtNodes} />
-                    <Explore />
+                    <RecentThoughts thoughts={recentThoughtNodes} />
+                    <Explore thoughts={exploreThoughtNodes} />
                 </div>
             </div>
         );

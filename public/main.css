@@ -40,15 +40,19 @@ h3 {
 }
 
 .recent-thoughts-wrapper {
-   width: 35%;
+   width: 30%;
    margin-right: 20px;
 }
 
 .explore-wrapper {
-    width: 65%;
+    width: 70%;
 }
 
-.thought-list, .explore-results  {
+.explore-wrapper .thought-list {
+    width: 40%;
+}
+
+.thought-list {
     border: 1px solid #eeeeee;
     border-radius: 2px;
 }
@@ -99,10 +103,28 @@ h3 {
     border-bottom: 1px solid #eeeeee;
     border-radius: 2px;
     cursor: pointer;
+    overflow: hidden;
+}
+
+.thought .delete-thought {
+    float: right;
+    color: #dddddd;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    display: none;
+}
+
+.thought .delete-thought:hover {
+    color: #cc0000;
 }
 
 .thought:hover {
-    background: #efefef;
+    background: #f6f6f6;
+}
+
+.thought:hover .delete-thought {
+    display: block;
 }
 
 .thought:last-child {
@@ -118,8 +140,12 @@ h3 {
 }
 
 .thought-content .theme-tag {
-    color: #09ADB7;
+    color: #08959D;
     cursor: pointer;
+}
+
+.thought-content .theme-tag:hover {
+    color: #0BD2DE;
 }
 
 .thought-datetime {
@@ -128,6 +154,8 @@ h3 {
     color: #8899a6;
     font-size: 10px;
     letter-spacing: 0.2px;
+    float: left;
+    padding-right: 10px;
 }
 
 .button {
