@@ -13,24 +13,40 @@ var Thought = (props) =>
 
 var RecentThoughts = (props) =>
     <div className="recent-thoughts-wrapper">
-        <h3 className="section-header">Recent</h3> <span className="scroll-info">(scroll)</span>
+        <div className="wrapper-header">
+            <h3 className="section-header">Recent</h3> <span className="scroll-info">(scroll)</span>
+        </div>
         <div className="thought-list">
             {props.thoughts}
         </div>
     </div>;
 
-var Explore = (props) =>
+var Similar = (props) =>
     <div className="explore-wrapper">
-        <h3 className="section-header">Explore</h3> <span className="scroll-info">(scroll)</span>
-        <div className="thought-list">
-            <div className="thought" style={{display: props.thoughts.length ? 'none' : 'block'}}>
+        <div className="wrapper-header">
+            <h3 className="section-header">Selected</h3> <span className="scroll-info">(scroll)</span>
+        </div>
+        
+        <div className="selected-thought-wrapper">
+            <div className="explore-help thought" style={{display: props.selectedThoughts.length ? 'none' : 'block'}}>
                 Click on a thought to explore similar thoughts
+            </div>
+            {props.selectedThoughts}
+        </div>
+        
+        <div className="explore-header">
+            <h3 className="section-header">Similar</h3> <span className="scroll-info">(scroll)</span>
+        </div>
+        
+        <div className="thought-list">
+            <div className="explore-help thought" style={{display: props.thoughts.length ? 'none' : 'block'}}>
+                No similar thoughts
             </div>
             {props.thoughts}
         </div>
     </div>;
     
-var Search = React.createClass({
+var Explore = React.createClass({
     getInitialState: function() {
         return { };
     },
@@ -40,7 +56,7 @@ var Search = React.createClass({
     render: function() {
         return (
             <div className="search-wrapper">
-                <h3 className="section-header">Search</h3>
+                <h3 className="section-header">Explore</h3>
                 <div className="search-tools"></div>
                 <div className="thought-list">
                     {this.props.thoughts}
@@ -242,7 +258,12 @@ var ThoughtBox = React.createClass({
 
 var ThoughtLog = React.createClass({
     getInitialState: function() {
-        return { recentThoughts: [], exploreThoughts: [], style: { display: 'none' } };
+        return { 
+            recentThoughts: [], 
+            similarThoughts: [], 
+            style: { display: 'none' }, 
+            exploreThoughts: []
+        };
     },
     componentDidMount: function() {
         this.loadRecentThoughtsFromServer();
@@ -255,31 +276,49 @@ var ThoughtLog = React.createClass({
             url: '/api/thoughts/recent', 
             success: function(data) {
                 this.setState({ recentThoughts: data, style: { display: 'block' } });
+                $('.recent-thoughts-wrapper .thought-list').hide().fadeIn();
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(status, err.toString());
             }
         });
     },
-    exploreThought: function(thoughtid) {
-        ca$h.post({
-            url: '/api/thought/explore', 
-            data: { thoughtid: thoughtid },
-            success: function(data) {
-                this.setState({ exploreThoughts: data });
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.error(status, err.toString());
-            }
-        });
+    exploreThought: function(thought) {
+        if(thought === undefined || thought === null) {
+            thought = this.state.exploreThoughts.slice(-1).pop()
+        } else {
+            this.setState({ 
+                exploreThoughts: this.state.exploreThoughts.concat([thought])
+            });
+        }
+        
+        if(thought) {
+            ca$h.post({
+                url: '/api/thought/explore', 
+                data: { thoughtid: thought.thoughtid },
+                success: function(data) {
+                    this.setState({ similarThoughts: data });
+                    $('.explore-wrapper .thought-list').hide().fadeIn();
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(status, err.toString());
+                }
+            });
+        }
     },
     deleteThought: function(thoughtid, e) {
         e.stopPropagation();
+        
         ca$h.post({
             url: '/api/thought/delete', 
             data: { thoughtid: thoughtid },
             success: function(data) {
                 this.loadRecentThoughtsFromServer();
+                // Delete thought from explore thoughts history
+                this.setState({ 
+                    exploreThoughts: _.filter(this.state.exploreThoughts, thought => thought.thoughtid !== thoughtid) 
+                });
+                this.exploreThought();
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(status, err.toString());
@@ -289,6 +328,10 @@ var ThoughtLog = React.createClass({
     render: function() {
         // Thought node helper function
         var generateThoughtNodes = function(thoughts) {  
+            if(thoughts === undefined || thoughts === null || thoughts[0] === undefined) {
+                return [];
+            }
+            
             return thoughts.map(function(thought, i) {
                 var thoughtDateCreated = moment(thought.datecreated).format('h:mmA - M/D/YY'),
                     decodedContent = decodeURI(thought.content),
@@ -315,14 +358,15 @@ var ThoughtLog = React.createClass({
                         datetime={thoughtDateCreated} 
                         content={clickableContent} 
                         deleteThought={this.deleteThought.bind(this, thought.thoughtid)}
-                        exploreThought={this.exploreThought.bind(this, thought.thoughtid)} />
+                        exploreThought={this.exploreThought.bind(this, thought)} />
                 );
             }.bind(this));
         }.bind(this);
         
         // Create thought nodes
         var recentThoughtNodes = generateThoughtNodes(this.state.recentThoughts);
-        var exploreThoughtNodes = generateThoughtNodes(this.state.exploreThoughts);
+        var exploreThoughtNodes = generateThoughtNodes(this.state.similarThoughts);
+        var selectedThoughtNodes = generateThoughtNodes(this.state.exploreThoughts.slice(-1));
         
         return (
             <div className="thought-log" style={this.state.style}>
@@ -331,8 +375,8 @@ var ThoughtLog = React.createClass({
                 <ThoughtBox onThoughtSubmitted={this.setRecentThoughts} />
                 
                 <div className="consuming-section">
-                    <Search />
-                    <Explore thoughts={exploreThoughtNodes} />
+                    <Explore />
+                    <Similar selectedThoughts={selectedThoughtNodes} thoughts={exploreThoughtNodes} />
                     <RecentThoughts thoughts={recentThoughtNodes} />
                 </div>
             </div>

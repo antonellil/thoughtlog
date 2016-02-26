@@ -40,14 +40,15 @@ h3 {
     justify-content: space-around;
 }
 
-.recent-thoughts-wrapper {
+.recent-thoughts-wrapper, .explore-wrapper, .search-wrapper {
    width: 30%;
+   height: 500px;
+   display: flex;
+   flex-flow: column;
 }
 
 .explore-wrapper {
-    width: 30%;
     margin-right: 10px;
-    height: 400px;
 }
 
 .search-wrapper {
@@ -58,10 +59,10 @@ h3 {
 .thought-list {
     border: 1px solid #eeeeee;
     border-radius: 2px;
-    height: 400px;
     overflow: scroll;
     box-shadow: 0 1px 2px #eeeeee;
-    clear: both;
+    clear: both; 
+    flex: 1 1 auto;
 }
 
 .thought-textarea {
@@ -215,4 +216,20 @@ h3 {
 .section-header {
     margin-right: 5px;
     float: left;
+}
+
+.explore-help:hover {
+    background: none;
+    cursor: auto;
+}
+
+.selected-thought-wrapper {
+    margin-bottom: 10px;
+}
+
+.selected-thought-wrapper .thought {
+    background: #f6f6f6;
+    border-radius: 2px;
+    max-height: 100px;
+    overflow: scroll;
 }
