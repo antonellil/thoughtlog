@@ -230,6 +230,6 @@ h3 {
 .selected-thought-wrapper .thought {
     background: #f6f6f6;
     border-radius: 2px;
-    max-height: 100px;
+    max-height: 120px;
     overflow: scroll;
 }
