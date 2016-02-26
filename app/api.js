@@ -7,7 +7,7 @@ module.exports = function(knex) {
     
     // Common queries
     var queries = {
-        recentThoughts: knex('thoughts').select().limit(10).orderBy('datecreated', 'desc'),
+        recentThoughts: knex('thoughts').select().limit(100).orderBy('datecreated', 'desc'),
         themes: knex.max('content as content')
                     .from('themes')
                     .leftOuterJoin('thoughtthemes', 'themes.themeid', 'thoughtthemes.themeid')
@@ -114,6 +114,7 @@ module.exports = function(knex) {
                     where tts1.thoughtid = :thoughtid
                         and tts2.thoughtid != :thoughtid
                     group by tts2.thoughtid
+                    order by COUNT(tts2.thoughtid) desc
             `, { thoughtid: req.body.thoughtid })
             .then(function(result) {
                 res.json(result.rows);

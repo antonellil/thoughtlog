@@ -13,13 +13,24 @@ var Thought = (props) =>
 
 var RecentThoughts = (props) =>
     <div className="recent-thoughts-wrapper">
-        <h3>Recent</h3>
+        <h3 className="section-header">Recent</h3> <span className="scroll-info">(scroll)</span>
         <div className="thought-list">
             {props.thoughts}
         </div>
     </div>;
 
-var Explore = React.createClass({
+var Explore = (props) =>
+    <div className="explore-wrapper">
+        <h3 className="section-header">Explore</h3> <span className="scroll-info">(scroll)</span>
+        <div className="thought-list">
+            <div className="thought" style={{display: props.thoughts.length ? 'none' : 'block'}}>
+                Click on a thought to explore similar thoughts
+            </div>
+            {props.thoughts}
+        </div>
+    </div>;
+    
+var Search = React.createClass({
     getInitialState: function() {
         return { };
     },
@@ -28,12 +39,11 @@ var Explore = React.createClass({
     },
     render: function() {
         return (
-            <div className="explore-wrapper">
-                <h3>Explore</h3>
-                <div className="explore-results">
-                    <div className="thought-list">
-                        {this.props.thoughts}
-                    </div>
+            <div className="search-wrapper">
+                <h3 className="section-header">Search</h3>
+                <div className="search-tools"></div>
+                <div className="thought-list">
+                    {this.props.thoughts}
                 </div>
             </div>
         );
@@ -116,9 +126,14 @@ var ThoughtBox = React.createClass({
         return ca$h.mod(selectedTheme, themeOptions.length);
     },
     handleKeyDown: function(e) {
-        // Prevent default in hash mode for enter, down, up, tab
+        // Prevent default for tab within the thought input
+        if(e.keyCode === 9) {
+            e.preventDefault();
+        }
+        
+        // Prevent default in hash mode for enter, down, up
         if(this.state.hashMode) {
-            if(e.keyCode === 13 || e.keyCode === 9 || e.keyCode === 40 || e.keyCode === 38) {
+            if(e.keyCode === 13 || e.keyCode === 40 || e.keyCode === 38) {
                 e.preventDefault();
             }
         }  
@@ -159,6 +174,10 @@ var ThoughtBox = React.createClass({
             } else {
                 selectedTheme = this.handleHashMode(e, themeOptions, selectedTheme);
             }
+        }
+        
+        if(!hashMode && e.keyCode === 9) {
+            content = e.target.value + "    ";
         }
         
         this.setState({ 
@@ -312,8 +331,9 @@ var ThoughtLog = React.createClass({
                 <ThoughtBox onThoughtSubmitted={this.setRecentThoughts} />
                 
                 <div className="consuming-section">
-                    <RecentThoughts thoughts={recentThoughtNodes} />
+                    <Search />
                     <Explore thoughts={exploreThoughtNodes} />
+                    <RecentThoughts thoughts={recentThoughtNodes} />
                 </div>
             </div>
         );

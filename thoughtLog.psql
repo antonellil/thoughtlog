@@ -29,6 +29,5 @@ CREATE TABLE thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
-        
     
 
