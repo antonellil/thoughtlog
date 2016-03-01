@@ -13,7 +13,7 @@ CREATE TABLE brains (
 CREATE TABLE thoughts (
     thoughtId       serial CONSTRAINT thoughtKey PRIMARY KEY,
     content         text NOT NULL,
-    brainId         integer NOT NULL REFERENCES brains (brainId),
+    brainid         integer NOT NULL REFERENCES brains (brainId),
     dateCreated     timestamp NOT NULL,
     dateDeleted     timestamp NULL
 );
@@ -22,12 +22,12 @@ CREATE TABLE themes (
     themeId         serial NOT NULL CONSTRAINT themeKey PRIMARY KEY,
     content         text NOT NULL,
     dateCreated     timestamp NOT NULL,
-    CONSTRAINT      themes_content_unique UNIQUE (content)
+    brainid         integer NOT NULL REFERENCES brains (brainId),
+    CONSTRAINT      theme_content_brainid_unique UNIQUE (content, brainid)
 );
 
 CREATE TABLE thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
-    
 

@@ -7,19 +7,27 @@ module.exports = function(knex) {
     
     // Common queries
     var queries = {
-        recentThoughts: knex('thoughts').select().limit(100).orderBy('datecreated', 'desc'),
-        themes: knex.max('content as content')
+        recentThoughts: function(brainid) {
+            return knex('thoughts')
+                    .select()
+                    .where({ brainid: brainid, datedeleted: null })
+                    .limit(100)
+                    .orderBy('datecreated', 'desc')
+        },
+        themes: function(brainid) { 
+                return knex.max('content as content')
                     .from('themes')
+                    .where({ brainid: brainid })
                     .leftOuterJoin('thoughtthemes', 'themes.themeid', 'thoughtthemes.themeid')
                     .groupBy('themes.themeid')
-                    .orderByRaw('COUNT(*) DESC')
+                    .orderByRaw('COUNT(*) DESC');
+        }
     };
     
     api.get('/api/thoughts/recent', function (req, res) {
         
         // Get 10 most recent thoughts
-        queries
-            .recentThoughts
+        queries.recentThoughts(req.query.brainid)
             .then(function (rows) {
                 res.json(rows);
             })
@@ -34,8 +42,9 @@ module.exports = function(knex) {
             themeContents = _.filter(_.uniq(cleanedContentPieces), theme => words.stopWords.indexOf(theme.toLowerCase()) === -1),
             themes = themeContents ? themeContents.map(function(v, i) {
                 return { 
-                    content: v, // Remove all punctuation, space, make lowercase
-                    datecreated: new Date()
+                    content: v,
+                    datecreated: new Date(),
+                    brainid: req.body.brainid
                 };
             }) : null,
             existingThemeIds = [], themeIds = [], recentThoughts;
@@ -73,11 +82,11 @@ module.exports = function(knex) {
                 return knex('thoughtthemes').insert(thoughtThemes);
             })
             .then(function() {
-                return queries.recentThoughts; // Get recent thoughts
+                return queries.recentThoughts(req.body.brainid); // Get recent thoughts
             })
             .then(function (rows) {
                 recentThoughts = rows; // Store recent thoughts
-                return queries.themes; // Get all themes
+                return queries.themes(req.body.brainid); // Get all themes
             })
             .then(function (rows) {
                 res.json({ recentThoughts: recentThoughts, themes: rows });
@@ -91,7 +100,7 @@ module.exports = function(knex) {
     api.get('/api/themes/getAll', function (req, res) {
 
         // Get all themes
-        queries.themes
+        queries.themes(req.query.brainid)
             .then(function (rows) {
                 res.json(rows);
             })
@@ -124,6 +133,25 @@ module.exports = function(knex) {
             });
     });
     
+    api.post('/api/search', function (req, res) {
+
+        // Delete thought
+        knex('themes')
+            .distinct('thoughts.thoughtid')
+            .select('thoughts.thoughtid', 'thoughts.content', 'thoughts.datecreated')
+            .where('thoughts.datedeleted', null)
+            .whereIn('themes.content', req.body.searchTerms)
+            .leftJoin('thoughtthemes', 'themes.themeid', 'thoughtthemes.themeid')
+            .leftJoin('thoughts', 'thoughtthemes.thoughtid', 'thoughts.thoughtid')
+            .then(function(rows) {
+                res.json(_.filter(rows, 'thoughtid'));
+            })
+            .catch(function (err) {
+                res.json({ error: err });
+                console.log(err);
+            })
+    });
+    
     api.post('/api/thought/delete', function (req, res) {
 
         // Delete thought
@@ -133,7 +161,7 @@ module.exports = function(knex) {
             .then(function(rows) {
                 return knex('thoughts')
                     .where({ thoughtid: req.body.thoughtid })
-                    .del()
+                    .update({ datedeleted: new Date() })
             })
             .then(function(rows) {
                 res.json(rows);

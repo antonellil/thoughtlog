@@ -7,7 +7,7 @@
     letter-spacing: 0.2px;
 }
 
-h3 {
+h3, h3 span {
     font-size: 14px;
     margin-bottom: 5px;
 }
@@ -41,7 +41,7 @@ h3 {
 }
 
 .recent-thoughts-wrapper, .explore-wrapper, .search-wrapper {
-   width: 30%;
+   width: 32%;
    height: 500px;
    display: flex;
    flex-flow: column;
@@ -51,8 +51,20 @@ h3 {
     margin-right: 10px;
 }
 
+.search-wrapper .search-tools {
+    margin-bottom: 10px;
+}
+
+.search-wrapper .explore-input {
+    width: 100%;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: 2px;
+    border: 1px solid #dedede;
+}
+
 .search-wrapper {
-    width: 40%;
+    width: 36%;
     margin-right: 10px;
 }
 

@@ -14,7 +14,7 @@ var Thought = (props) =>
 var RecentThoughts = (props) =>
     <div className="recent-thoughts-wrapper">
         <div className="wrapper-header">
-            <h3 className="section-header">Recent</h3> <span className="scroll-info">(scroll)</span>
+            <h3 className="section-header">Recent ({props.thoughts.length})</h3> <span className="scroll-info">(scroll)</span>
         </div>
         <div className="thought-list">
             {props.thoughts}
@@ -35,7 +35,7 @@ var Similar = (props) =>
         </div>
         
         <div className="explore-header">
-            <h3 className="section-header">Similar</h3> <span className="scroll-info">(scroll)</span>
+            <h3 className="section-header">Similar {props.thoughts.length ? '(' + props.thoughts.length + ')' : ''}</h3> <span className="scroll-info">(scroll)</span>
         </div>
         
         <div className="thought-list">
@@ -48,16 +48,30 @@ var Similar = (props) =>
     
 var Explore = React.createClass({
     getInitialState: function() {
-        return { };
+        return { searchTerms: [] };  
     },
-    componentDidMount: function() {
-        return;
+    handleChange: function(e){
+        // Update search terms
+        this.setState({ searchTerms: e.target.value.replace(/[^A-Za-z0-9\s]/g,"").trim().toLowerCase().split(/\s+/) });
+    },
+    handleKeyUp: function(e) {
+        if(e.keyCode === 13) { // Use enter but get autocomplete working by sharing from thought entry
+            this.props.search(this.state.searchTerms);
+        }
     },
     render: function() {
         return (
             <div className="search-wrapper">
                 <h3 className="section-header">Explore</h3>
-                <div className="search-tools"></div>
+                <div className="search-tools">
+                    <input 
+                        type="text" 
+                        className="explore-input" 
+                        placeholder="workout pushups"
+                        onChange={this.handleChange}
+                        onKeyUp={this.handleKeyUp} />
+                </div>
+                <h3 className="section-header">Results {this.props.thoughts.length ? '(' + this.props.thoughts.length + ')' : ''}</h3>
                 <div className="thought-list">
                     {this.props.thoughts}
                 </div>
@@ -262,7 +276,9 @@ var ThoughtLog = React.createClass({
             recentThoughts: [], 
             similarThoughts: [], 
             style: { display: 'none' }, 
-            exploreThoughts: []
+            exploreThoughts: [],
+            searchThoughts: [],
+            searchTerms: []
         };
     },
     componentDidMount: function() {
@@ -306,6 +322,27 @@ var ThoughtLog = React.createClass({
             });
         }
     },
+    setSearchTerms: function(searchTerm) {
+        this.setState({ searchTerms: [searchTerm] });
+    },
+    search: function(searchTerms) {
+      if(searchTerms) {
+          this.setState({ searchTerms: searchTerms });
+      }
+      
+      ca$h.post({
+            url: '/api/search',
+            data: { searchTerms: searchTerms || this.state.searchTerms },
+            success: function(data) {
+                this.setState({ searchThoughts: data });
+                $('.search-wrapper .thought-list').hide().fadeIn();
+            }.bind(this),
+            error: function(err) {
+                this.setState({ searchThoughts: [] }); // Reset search with nothing
+                alert("Error searching. Please try again.");
+            }.bind(this)
+        });  
+    },
     deleteThought: function(thoughtid, e) {
         e.stopPropagation();
         
@@ -319,6 +356,7 @@ var ThoughtLog = React.createClass({
                     exploreThoughts: _.filter(this.state.exploreThoughts, thought => thought.thoughtid !== thoughtid) 
                 });
                 this.exploreThought();
+                this.search();
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(status, err.toString());
@@ -344,7 +382,11 @@ var ThoughtLog = React.createClass({
                     clickableContent.push(
                         <a 
                         className="theme-tag" 
-                        onClick={function(t){alert(t);}.bind(this, themes[i])} 
+                        onClick={function(theme, e) {
+                            e.stopPropagation();
+                            this.setSearchTerms(theme.replace('#', ''))
+                            this.search(theme.replace('#', ''));
+                        }.bind(this, themes[i])} 
                         key={thought.thoughtid + i}>
                             {themes[i]}
                         </a>);
@@ -367,6 +409,7 @@ var ThoughtLog = React.createClass({
         var recentThoughtNodes = generateThoughtNodes(this.state.recentThoughts);
         var exploreThoughtNodes = generateThoughtNodes(this.state.similarThoughts);
         var selectedThoughtNodes = generateThoughtNodes(this.state.exploreThoughts.slice(-1));
+        var searchThoughtNodes = generateThoughtNodes(this.state.searchThoughts);
         
         return (
             <div className="thought-log" style={this.state.style}>
@@ -375,9 +418,16 @@ var ThoughtLog = React.createClass({
                 <ThoughtBox onThoughtSubmitted={this.setRecentThoughts} />
                 
                 <div className="consuming-section">
-                    <Explore />
-                    <Similar selectedThoughts={selectedThoughtNodes} thoughts={exploreThoughtNodes} />
-                    <RecentThoughts thoughts={recentThoughtNodes} />
+                    <Explore 
+                        searchTerms={this.state.searchTerms}
+                        setSearchTerms={this.setSearchTerms}
+                        search={this.search}
+                        thoughts={searchThoughtNodes} />
+                    <Similar 
+                        selectedThoughts={selectedThoughtNodes} 
+                        thoughts={exploreThoughtNodes} />
+                    <RecentThoughts 
+                        thoughts={recentThoughtNodes} />
                 </div>
             </div>
         );
