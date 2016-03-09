@@ -3,7 +3,7 @@ var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
     pgConnectionString = process.env.RDS_HOSTNAME
-        ? 'jdbc:postgresql://'
+        ? 'postgresql://'
             + process.env.RDS_HOSTNAME  
             + ':' + process.env.RDS_PORT 
             + '/' + process.env.RDS_DB_NAME 
