@@ -4,7 +4,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     knex = require('knex')({ // Rivals legos for best childrens toy ever
         client: 'pg',
-        connection: process.env.DATABASE_URL || 'postgres://localhost:5432/louisantonelli',
+        connection: process.env.DATABASE_URL || 'postgres://localhost:5432/postgres',
         searchPath: 'knex,public'
     }),
     passport = require('./app/passportSetup')(knex),

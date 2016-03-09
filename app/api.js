@@ -123,7 +123,7 @@ module.exports = function(knex) {
                     where tts1.thoughtid = :thoughtid
                         and tts2.thoughtid != :thoughtid
                     group by tts2.thoughtid
-                    order by COUNT(tts2.thoughtid) desc
+                    order by COUNT(tts2.thoughtid) desc, datecreated desc
             `, { thoughtid: req.body.thoughtid })
             .then(function(result) {
                 res.json(result.rows);
@@ -134,22 +134,29 @@ module.exports = function(knex) {
     });
     
     api.post('/api/search', function (req, res) {
-
-        // Delete thought
         knex('themes')
             .distinct('thoughts.thoughtid')
             .select('thoughts.thoughtid', 'thoughts.content', 'thoughts.datecreated')
             .where('thoughts.datedeleted', null)
-            .whereIn('themes.content', req.body.searchTerms)
+            .where(function() {
+                _.forEach(req.body.searchTerms, function(term, index) {
+                    if(index === 0) {
+                        this.where('themes.content', 'like', term + '%')
+                    } else {
+                        this.orWhere('themes.content', 'like', term + '%'); 
+                    }
+                }.bind(this));
+            })
             .leftJoin('thoughtthemes', 'themes.themeid', 'thoughtthemes.themeid')
             .leftJoin('thoughts', 'thoughtthemes.thoughtid', 'thoughts.thoughtid')
+            .orderBy('thoughts.datecreated', 'desc')
             .then(function(rows) {
                 res.json(_.filter(rows, 'thoughtid'));
             })
             .catch(function (err) {
                 res.json({ error: err });
                 console.log(err);
-            })
+            });
     });
     
     api.post('/api/thought/delete', function (req, res) {

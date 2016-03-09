@@ -1,4 +1,4 @@
-CREATE TABLE brains (
+CREATE TABLE IF NOT EXISTS public.brains (
     brainid         serial CONSTRAINT brainKey PRIMARY KEY,
     fbid            varchar(256) NOT NULL,
     name            varchar(512) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE brains (
     fbauth          text NULL
 );
 
-CREATE TABLE thoughts (
+CREATE TABLE IF NOT EXISTS public.thoughts (
     thoughtId       serial CONSTRAINT thoughtKey PRIMARY KEY,
     content         text NOT NULL,
     brainid         integer NOT NULL REFERENCES brains (brainId),
@@ -18,7 +18,7 @@ CREATE TABLE thoughts (
     dateDeleted     timestamp NULL
 );
 
-CREATE TABLE themes (
+CREATE TABLE IF NOT EXISTS public.themes (
     themeId         serial NOT NULL CONSTRAINT themeKey PRIMARY KEY,
     content         text NOT NULL,
     dateCreated     timestamp NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE themes (
     CONSTRAINT      theme_content_brainid_unique UNIQUE (content, brainid)
 );
 
-CREATE TABLE thoughtThemes (
+CREATE TABLE IF NOT EXISTS public.thoughtThemes (
     thoughtId       integer NOT NULL REFERENCES thoughts (thoughtId),
     themeId         integer NOT NULL REFERENCES themes
 );
