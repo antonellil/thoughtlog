@@ -29,8 +29,8 @@ app.use(require('./app/api.js')(knex));
 
 // Start server ==============================================================================
 app.listen(port, function () {
-    _.forEach(Object.keys(process.env), function(item) {
-        console.log(process.env[item]);
+    Object.keys(process.env).forEach(function(item) {
+        console.log(item + ": " + process.env[item]);
     });
     
     console.log('Example app listening on port ' + port);
