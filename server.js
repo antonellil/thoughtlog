@@ -3,12 +3,12 @@ var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
     pgConnectionString = process.env.RDS_HOSTNAME
-        ? 'postgresql://'
-            + process.env.RDS_HOSTNAME  
+        ? 'postgres://'
+            + process.env.RDS_USERNAME
+            + ':' + process.env.RDS_PASSWORD
+            + '@' + process.env.RDS_HOSTNAME  
             + ':' + process.env.RDS_PORT 
-            + '/' + process.env.RDS_DB_NAME 
-            + '?user=' + process.env.RDS_USERNAME 
-            + '&password=' + process.env.RDS_PASSWORD
+            + '/' + process.env.RDS_DB_NAME
         : 'postgres://localhost:5432/postgres',
     knex = require('knex')({ // Rivals legos for best childrens toy ever
         client: 'pg',
