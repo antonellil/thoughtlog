@@ -4,7 +4,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     knex = require('knex')({ // Rivals legos for best childrens toy ever
         client: 'pg',
-        connection: process.env.DATABASE_URL || 'postgres://localhost:5432/postgres',
+        connection: process.env.RDS_HOSTNAME || 'postgres://localhost:5432/postgres',
         searchPath: 'knex,public'
     }),
     passport = require('./app/passportSetup')(knex),
@@ -29,6 +29,10 @@ app.use(require('./app/api.js')(knex));
 
 // Start server ==============================================================================
 app.listen(port, function () {
+    _.forEach(Object.keys(process.env), function(item) {
+        console.log(process.env[item]);
+    });
+    
     console.log('Example app listening on port ' + port);
 });
 
