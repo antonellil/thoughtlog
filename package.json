@@ -32,6 +32,6 @@
   },
   "scripts": {
     "start": "node server.js",
-    "postinstall": "bower install -F"
+    "postinstall": "node_modules/bower/bin/bower install -F"
   }
 }
