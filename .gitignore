@@ -35,3 +35,5 @@ node_modules
 .vscode
 
 bower_components
+
+psqlConnectionString.txt
