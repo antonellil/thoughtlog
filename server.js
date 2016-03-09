@@ -7,7 +7,7 @@ var express = require('express'),
             + process.env.RDS_HOSTNAME  
             + ':' + process.env.RDS_PORT 
             + '/' + process.env.RDS_DB_NAME 
-            + '?user=' + process.env.RDS_USERNAME 
+            + '?username=' + process.env.RDS_USERNAME 
             + '&password=' + process.env.RDS_PASSWORD
         : 'postgres://localhost:5432/postgres',
     knex = require('knex')({ // Rivals legos for best childrens toy ever
