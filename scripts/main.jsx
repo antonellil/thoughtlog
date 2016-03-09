@@ -1,12 +1,12 @@
 var Thought = (props) => 
-    <div className="thought" onClick={props.exploreThought}>
+    <div className="thought" onTap={props.exploreThought}>
         <div className="thought-content">
             {props.content}
         </div>
         <span className="thought-datetime">
             {props.datetime}
         </span>
-        <span className="delete-thought" onClick={props.deleteThought}>
+        <span className="delete-thought" onTap={props.deleteThought}>
             delete
         </span>
     </div>;
@@ -100,7 +100,7 @@ var Settings = React.createClass({
     render: function() {
         return (
             <div className="settings-wrapper">
-                <a className="logout-button" onClick={this.logout}>Logout</a>
+                <a className="logout-button" onTap={this.logout}>Logout</a>
             </div>
         );
     }
