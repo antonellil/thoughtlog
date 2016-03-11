@@ -253,7 +253,7 @@ var ThoughtBox = React.createClass({
                     onKeyUp={this.handleKeyUp}
                     onKeyDown={this.handleKeyDown}></textarea>
                     
-                <div className="help-text">Shift + Enter to submit</div>
+                <div className="help-text">Submit</div>
                 
                 <div className="theme-box" style={tagBoxStyle}>
                     {themes}
