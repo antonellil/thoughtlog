@@ -9,7 +9,7 @@ var express = require('express'),
             + '@' + process.env.RDS_HOSTNAME  
             + ':' + process.env.RDS_PORT 
             + '/' + process.env.RDS_DB_NAME
-        : 'postgres://localhost:5432/postgres',
+        : 'postgres://localhost:5432/louisantonelli',
     knex = require('knex')({ // Rivals legos for best childrens toy ever
         client: 'pg',
         connection: pgConnectionString,

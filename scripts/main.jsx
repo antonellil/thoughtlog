@@ -121,6 +121,10 @@ var ThoughtBox = React.createClass({
     submitThought: function(e) {
         var content = this.state.content;
         
+        if(content.trim() === '') {
+            return; // TODO: error message
+        }
+        
         this.setState({ content: ""}); // Clear content
         
         ca$h.post({
@@ -149,12 +153,12 @@ var ThoughtBox = React.createClass({
         if(e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 9) {
             selectedTheme += e.keyCode === 40 || e.keyCode === 9 ? 1 : -1;
         }
-            
+        
         // Check selected theme bounds
         return ca$h.mod(selectedTheme, themeOptions.length);
     },
     handleKeyDown: function(e) {
-        // Prevent default for tab within the thought input
+        // Tabbing is for submit
         if(e.keyCode === 9) {
             e.preventDefault();
         }
@@ -172,35 +176,35 @@ var ThoughtBox = React.createClass({
             lastResult = /\S+$/.exec(e.target.value.slice(0, e.target.selectionEnd)),
             lastTheme = lastResult ? lastResult[0] : null,
             lastWord = lastTheme ? lastTheme.slice(1).toLowerCase() : null,
-            themeOptions = _.filter(this.state.allThemes, function(theme) {
-                    return lastTheme 
-                        ? theme.content.toLowerCase().indexOf(lastWord.toLowerCase()) === 0 // Starts with the typed word
-                            && theme.content.length !== lastWord.length // If user typed full word, remove
-                        : false;
-                }).slice(0,10),
-            hashMode = lastTheme && themeOptions.length > 0
+            themeOptions = [],
+            hashMode = lastTheme
                 ? lastTheme.indexOf('#') > -1 && e.keyCode !== 27 // Escape
                 : false,
             content = e.target.value,
             selectedTheme = hashMode ? this.state.selectedTheme : 0;
         
         // Enter to submit thought when not in hash mode
-        if(e.keyCode === 13 && e.shiftKey && !hashMode && this.state.content.trim() !== '') {
-            e.preventDefault();
+        if(e.keyCode === 9 && !hashMode) {
             this.submitThought();
-            e.target.style.height = 60+'px'; // Reset height after submission
         }
         
         // Handle hash mode
         if(hashMode) {
+            themeOptions = _.filter(this.state.allThemes, function(theme) {
+                return lastTheme 
+                    ? theme.content.toLowerCase().indexOf(lastWord.toLowerCase()) === 0 // Starts with the typed word
+                        && theme.content.length !== lastWord.length // If user typed full word, remove
+                    : false;
+            }).slice(0,10);
+            
             // Enter key to selected theme
-            if(e.keyCode === 13) {
+            if(e.keyCode === 13 && themeOptions.length) {
                 content = e.target.value.slice(0, lastResult.index + 1)
                     + themeOptions[selectedTheme].content 
                     + " " // Space after theme entered
                     + e.target.value.slice(lastResult.index + 1 + lastWord.length);
                 hashMode = false;
-            } else {
+            } else if(themeOptions.length) {
                 selectedTheme = this.handleHashMode(e, themeOptions, selectedTheme);
             }
         }
@@ -253,7 +257,7 @@ var ThoughtBox = React.createClass({
                     onKeyUp={this.handleKeyUp}
                     onKeyDown={this.handleKeyDown}></textarea>
                     
-                <div className="help-text">Submit</div>
+                <a className="submit-button" onClick={this.submitThought}>Submit</a>
                 
                 <div className="theme-box" style={tagBoxStyle}>
                     {themes}
